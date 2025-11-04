@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const db = require('./models');
+const film = require('./models/film');
 const PORT = 3000;
 app.use(express.json());
 app .use(express.urlencoded({ extended: true }));
@@ -36,20 +37,22 @@ app.get('/film',async (req, res) => {
     }
   });
 
-  app.put('/film/:id', async (req, res) => {
-    const filmId = req.params.id;
+app.put("/film/:id", async(req, res)=>{
+    const id = req.params.id;
     const data = req.body;
-    try {
-        const film = await db.film.findByPk(komikId);
-        if (!film) {
-            return res.status(404).send({ message: 'Film tidak ditemukan' });
+
+    try{
+        const film = await db.film.findByPk(id);
+        if (!film){
+            return res.status(404).send({message : "film tidak tersedia"});
         }
         await film.update(data);
-        res.send({message: 'Film berhasil diupdate', komik});
-    } catch (err) {
+        res.send({ message: "film berhasil diupdate", film});
+    } catch(err){;
         res.status(500).send(err);
     }
-  });
+});
+
 
   app.delete('/film/:id', async (req, res) => {
     const id = req.params.id;
