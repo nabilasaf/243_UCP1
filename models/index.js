@@ -1,66 +1,43 @@
-const express = require('express');
-const app = express();
-const db = require('./models');
-const PORT = 3000;
-app.use(express.json());
-app .use(express.urlencoded({ extended: true }));
-app.listen(PORT, () => {
-    console.log(`Server started on port 3000`);
-});
-db.sequelize.sync()
-.then((result)=> {
-    app.listen(3000, ()=> {
-        console.log('Server started');
-    })
-})
-.catch((err) => {
-    console.log(err);
-});
+'use strict';
 
-app.post('/film', async (req, res) => {
-    const data = req.body;
-    try {
-        const film = await db.Hollywood.create(data);
-        res.send(film);
-    } catch (err) {
-        res.send(err);
-    }   
-});
+const fs = require('fs');
+const path = require('path');
+const Sequelize = require('sequelize');
+const process = require('process');
+const basename = path.basename(__filename);
+const env = process.env.NODE_ENV || 'development';
+const config = require(__dirname + '/../config/config.js')[env];
+const db = {};
 
-app.get('/film',async (req, res) => {
-    try {
-        const film = await db.Hollywood.findAll();
-        res.send(film);
-    } catch (err) {
-        res.send(err);
-    }
+let sequelize;
+if (config.use_env_variable) {
+  sequelize = new Sequelize(process.env[config.use_env_variable], config);
+} else {
+  sequelize = new Sequelize(config.database, config.username, config.password, config);
+}
+
+fs
+  .readdirSync(__dirname)
+  .filter(file => {
+    return (
+      file.indexOf('.') !== 0 &&
+      file !== basename &&
+      file.slice(-3) === '.js' &&
+      file.indexOf('.test.js') === -1
+    );
+  })
+  .forEach(file => {
+    const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
+    db[model.name] = model;
   });
 
-  app.put('/film/:id', async (req, res) => {
-    const filmId = req.params.id;
-    const data = req.body;
-    try {
-        const film = await db.Hollywood.findByPk(komikId);
-        if (!film) {
-            return res.status(404).send({ message: 'Film tidak ditemukan' });
-        }
-        await film.update(data);
-        res.send({message: 'Film berhasil diupdate', komik});
-    } catch (err) {
-        res.status(500).send(err);
-    }
-  });
+Object.keys(db).forEach(modelName => {
+  if (db[modelName].associate) {
+    db[modelName].associate(db);
+  }
+});
 
-  app.delete('/film/:id', async (req, res) => {
-    const id = req.params.id;
-    try {
-        const film = await db.Hollywood.findByPk(id);
-        if (!film) {
-            returnres.status(404).send({message: 'Film tidak ditemukan'});
-        }
-        await film.destroy();
-        res.send({message: 'Film berhasil dihapus'});
-    } catch (err) {
-        res.status(500).send(err);
-    }
-  });
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
+
+module.exports = db;
