@@ -17,6 +17,16 @@ db.sequelize.sync()
     console.log(err);
 });
 
+app.post('/film', async (req, res) => {
+    const data = req.body;
+    try {
+        const film = await db.Hollywood.create(data);
+        res.send(film);
+    } catch (err) {
+        res.send(err);
+    }   
+});
+
 app.get('/film',async (req, res) => {
     try {
         const film = await db.Hollywood.findAll();
