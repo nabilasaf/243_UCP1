@@ -40,3 +40,17 @@ app.get('/film',async (req, res) => {
         res.status(500).send(err);
     }
   });
+
+  app.delete('/film/:id', async (req, res) => {
+    const id = req.params.id;
+    try {
+        const film = await db.Hollywood.findByPk(id);
+        if (!film) {
+            returnres.status(404).send({message: 'Film tidak ditemukan'});
+        }
+        await film.destroy();
+        res.send({message: 'Film berhasil dihapus'});
+    } catch (err) {
+        res.status(500).send(err);
+    }
+  });
